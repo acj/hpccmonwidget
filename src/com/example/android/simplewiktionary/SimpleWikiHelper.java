@@ -143,17 +143,11 @@ public class SimpleWikiHelper {
      * @throws ApiException If any connection or server error occurs.
      * @throws ParseException If there are problems parsing the response.
      */
-    public static String getPageContent(String title, boolean expandTemplates)
+    public static String getPageContent(boolean expandTemplates)
             throws ApiException, ParseException {
-        // Encode page title and expand templates if requested
-        String encodedTitle = Uri.encode(title);
-        String expandClause = expandTemplates ? WIKTIONARY_EXPAND_TEMPLATES : "";
-        
         // Query the API for content
-        String content = getUrlContent(String.format(WIKTIONARY_PAGE,
-                encodedTitle, expandClause));
+        return getUrlContent(WIKTIONARY_PAGE);
         
-        return content;
         /*
         try {
             // Drill into the JSON response to find the content body

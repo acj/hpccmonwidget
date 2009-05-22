@@ -34,6 +34,7 @@ import android.text.format.Time;
 import android.util.Log;
 import android.widget.RemoteViews;
 
+import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,6 +44,8 @@ import java.util.regex.Pattern;
  * an update we spawn a background {@link Service} to perform the API queries.
  */
 public class WordWidget extends AppWidgetProvider {
+	public static ServiceUpdateUIListener UI_UPDATE_LISTENER;
+	
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager,
             int[] appWidgetIds) {
@@ -51,6 +54,12 @@ public class WordWidget extends AppWidgetProvider {
     }
     
     public static class UpdateService extends Service {
+    	private Timer timer;
+    	private long UPDATE_INTERVAL = 5000L;
+    	private Context ctx;
+    	
+    	private static String statusText;
+    	
     	//private Handler updateHandler;
         @Override
         public void onStart(Intent intent, int startId) {
@@ -63,18 +72,26 @@ public class WordWidget extends AppWidgetProvider {
             manager.updateAppWidget(thisWidget, updateViews);
         }
         
-        /*
-        public class UpdateStats extends TimerTask {
-        	Context c;
-        	
-        	// TODO: Start here...
-        	public void run() {
-        		RemoteViews updateViews = buildUpdate(c);
-        		AppWidgetManager manager = AppWidgetManager.getInstance(super);
-                manager.updateAppWidget(thisWidget, updateViews);
-        	}
+        public void updateStats() {
+            String pageContent = "";
+            
+            try {
+                pageContent = SimpleWikiHelper.getPageContent(false);
+            } catch (ApiException e) {
+                Log.e("WordWidget", "Couldn't contact API", e);
+            } catch (ParseException e) {
+                Log.e("WordWidget", "Couldn't parse API response", e);
+            }
+            
+            // Use a regular expression to parse out the word and its definition
+            Pattern pattern = Pattern.compile(SimpleWikiHelper.WORD_OF_DAY_REGEX, Pattern.DOTALL);
+            System.out.println(pageContent);
+            Matcher matcher = pattern.matcher(pageContent);
+            if (matcher.find()) {
+                String statusText = matcher.group(1) + " Running\n" + matcher.group(2);
+            }
+            
         }
-        */
 
         /**
          * Build a widget update to show the current Wiktionary
@@ -83,22 +100,14 @@ public class WordWidget extends AppWidgetProvider {
         public RemoteViews buildUpdate(Context context) {
             // Pick out month names from resources
             Resources res = context.getResources();
-            String[] monthNames = res.getStringArray(R.array.month_names);
             
-            // Find current month and day
-            Time today = new Time();
-            today.setToNow();
-
-            // Build today's page title, like "Wiktionary:Word of the day/March 21"
-            String pageName = res.getString(R.string.template_wotd_title,
-                    monthNames[today.month], today.monthDay);
             RemoteViews updateViews = null;
             String pageContent = "";
             
             try {
                 // Try querying the Wiktionary API for today's word
                 SimpleWikiHelper.prepareUserAgent(context);
-                pageContent = SimpleWikiHelper.getPageContent(pageName, false);
+                pageContent = SimpleWikiHelper.getPageContent(false);
             } catch (ApiException e) {
                 Log.e("WordWidget", "Couldn't contact API", e);
             } catch (ParseException e) {
@@ -133,12 +142,6 @@ public class WordWidget extends AppWidgetProvider {
                 //CharSequence errorMessage = context.getText(R.string.widget_error);
                 updateViews.setTextViewText(R.id.message, "Parse Error");
             }
-            
-            /*
-            // Update in 10 minutes
-            updateHandler = new Handler();
-            updateHandler.postDelayed(this.buildUpdate(context), 600000);
-            */
             return updateViews;
         }
         
