@@ -15,16 +15,16 @@
 -->
 
 <resources>
-    <string name="app_name">Wiktionary simple example</string>
+    <string name="app_name">HPCC Monitor Widget</string>
 
-    <string name="template_user_agent">"%s/%s (Linux; Android)"</string>
-    <string name="template_wotd_title">"Wiktionary:Word of the day/%s %s"</string>
-    <string name="template_define_url">"http://en.wiktionary.org/wiki/%s"</string>
     
-    <string name="widget_name">Wiktionary simple</string>
+    
+    
+    
+    <string name="widget_name">HPCC Monitor</string>
 
-    <string name="widget_loading">Loading word\nof day\u2026</string>
-    <string name="widget_error">No word of\nday found</string>
+    <string name="widget_loading">Polling HPCC\u2026</string>
+    <string name="widget_error">No data found</string>
 
     <string-array name="month_names">
         <item>January</item>
