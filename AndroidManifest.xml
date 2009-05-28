@@ -31,6 +31,11 @@
         
         <!-- Service to perform web API queries -->        
         <service android:name=".HPCCMonWidget$UpdateService" />
+        <activity android:name=".HPCCMonWidgetConfigure">
+		    <intent-filter>
+		    	<action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+    		</intent-filter>
+		</activity>
         
     </application>
     

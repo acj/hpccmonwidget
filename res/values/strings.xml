@@ -41,4 +41,6 @@
         <item>December</item>
     </string-array>
     
+<string name="widget_username">HPCC Username</string>
+<string name="widget_url">Stats script location</string>
 </resources>

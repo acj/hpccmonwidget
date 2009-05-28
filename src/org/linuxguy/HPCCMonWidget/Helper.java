@@ -22,6 +22,8 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.params.ClientPNames;
+import org.apache.http.client.params.CookiePolicy;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,6 +32,8 @@ import org.json.JSONObject;
 import org.linuxguy.HPCCMonWidget.R;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -52,12 +56,13 @@ public class Helper {
      */
     public static final String HPCC_REGEX =
     	"(\\d+) Current.+\\n.+(\\d+ Finished)";
-        //"(?s)\\{\\{wotd\\|(.+?)\\|(.+?)\\|([^#\\|]+).*?\\}\\}";
     
     /**
      * Partial URL to use when requesting an HPCC status.
      */
-    private static final String HPCCSTATS_PAGE = "http://www.cse.msu.edu/~connel42/diststats/index.php?username=acj";
+    private static String HPCCSTATS_PAGE = "";
+    
+    private static String HPCCSTATS_USER = "";
 
     /**
      * {@link StatusLine} HTTP status code when no server error has occurred.
@@ -100,6 +105,15 @@ public class Helper {
         }
     }
     
+    public static void prepareHPCCData(Context context) {
+    	if (HPCCSTATS_USER == "" || getHPCCPage() == "") {
+    		SharedPreferences prefs = context.getSharedPreferences("org.linuxguy.HPCCMonWidget", 0);
+    		HPCCSTATS_USER = prefs.getString("hpccmonwidget_user", "");
+    		setHPCCPage(prefs.getString("hpccmonwidget_url", ""));
+    		Log.i("Status", "prepareHPCCData()");
+    	}
+    }
+    
     /**
      * Prepare the internal User-Agent string for use. This requires a
      * {@link Context} to pull the package name and version number for this
@@ -129,7 +143,9 @@ public class Helper {
     public static String getPageContent()
             throws ApiException, ParseException {
         // Query the API for content
-        return getUrlContent(HPCCSTATS_PAGE);
+    	String URI = getHPCCPage() + "?username=" + getHPCCUser();
+    	Log.i("HPCCMonWidget", "Polling " + URI);
+        return getUrlContent(URI);
     }
 
     /**
@@ -179,4 +195,20 @@ public class Helper {
             throw new ApiException("Problem communicating with API", e);
         }
     }
+
+	public static void setHPCCUser(String hPCCSTATS_USER) {
+		HPCCSTATS_USER = hPCCSTATS_USER;
+	}
+
+	public static String getHPCCUser() {
+		return HPCCSTATS_USER;
+	}
+
+	public static void setHPCCPage(String hPCCSTATS_PAGE) {
+		HPCCSTATS_PAGE = hPCCSTATS_PAGE;
+	}
+
+	public static String getHPCCPage() {
+		return HPCCSTATS_PAGE;
+	}
 }

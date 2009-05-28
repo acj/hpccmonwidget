@@ -31,6 +31,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.text.format.Time;
 import android.util.Log;
+import android.widget.EditText;
 import android.widget.RemoteViews;
 
 import java.util.Timer;
@@ -48,11 +49,19 @@ import org.linuxguy.HPCCMonWidget.Helper.ParseException;
  * For more information, please see <http://www.hpcc.msu.edu/>
  */
 public class HPCCMonWidget extends AppWidgetProvider {
+	public int mAppWidgetId;
+	
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager,
             int[] appWidgetIds) {
         // To prevent any ANR timeouts, we perform the update in a service
-        context.startService(new Intent(context, UpdateService.class));
+    	context.startService(new Intent(context, UpdateService.class));
+    }
+    
+    public static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
+    		int appWidgetId, String username, String url) {
+    	RemoteViews views = UpdateService.buildUpdate(context);
+    	appWidgetManager.updateAppWidget(appWidgetId, views);
     }
     
     public static class UpdateService extends Service {
@@ -71,12 +80,18 @@ public class HPCCMonWidget extends AppWidgetProvider {
         /**
          * Build a widget update to show the HPCC status.
          */
-        public RemoteViews buildUpdate(Context context) {
-            RemoteViews updateViews = null;
+        public static RemoteViews buildUpdate(Context context) {
+            RemoteViews updateViews = new RemoteViews(context.getPackageName(), R.layout.widget_word);;
             String pageContent = "";
+            
+            if (Helper.getHPCCUser() == "") {
+            	Log.i("HPCCMonWidget", "Skipping this update!");
+            	return updateViews;
+            }
             
             try {
                 // Try querying the HPCC
+            	Helper.prepareHPCCData(context);
                 Helper.prepareUserAgent(context);
                 pageContent = Helper.getPageContent();
             } catch (ApiException e) {
@@ -87,11 +102,10 @@ public class HPCCMonWidget extends AppWidgetProvider {
             
             // Use a regular expression to parse out the word and its definition
             Pattern pattern = Pattern.compile(Helper.HPCC_REGEX, Pattern.DOTALL);
-            System.out.println(pageContent);
             Matcher matcher = pattern.matcher(pageContent);
             if (matcher.find()) {
                 // Build an update that holds the updated widget contents
-                updateViews = new RemoteViews(context.getPackageName(), R.layout.widget_word);
+                
                 
                 String wordTitle = matcher.group(1) + " Running\n" + matcher.group(2);
                 updateViews.setTextViewText(R.id.word_title, "HPCC Status");

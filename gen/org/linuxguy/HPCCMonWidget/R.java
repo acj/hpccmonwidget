@@ -22,23 +22,31 @@ public final class R {
         public static final int widget_bg_selected=0x7f020005;
     }
     public static final class id {
-        public static final int bullet=0x7f080005;
-        public static final int definition=0x7f080006;
-        public static final int icon=0x7f080002;
-        public static final int message=0x7f080001;
+        public static final int btnSave=0x7f080005;
+        public static final int bullet=0x7f08000a;
+        public static final int definition=0x7f08000b;
+        public static final int icon=0x7f080007;
+        public static final int lblURL=0x7f080003;
+        public static final int lblUsername=0x7f080001;
+        public static final int message=0x7f080006;
+        public static final int txtURL=0x7f080004;
+        public static final int txtUsername=0x7f080002;
         public static final int widget=0x7f080000;
-        public static final int word_title=0x7f080003;
-        public static final int word_type=0x7f080004;
+        public static final int word_title=0x7f080008;
+        public static final int word_type=0x7f080009;
     }
     public static final class layout {
-        public static final int widget_message=0x7f030000;
-        public static final int widget_word=0x7f030001;
+        public static final int widget_config=0x7f030000;
+        public static final int widget_message=0x7f030001;
+        public static final int widget_word=0x7f030002;
     }
     public static final class string {
         public static final int app_name=0x7f050000;
         public static final int widget_error=0x7f050003;
         public static final int widget_loading=0x7f050002;
         public static final int widget_name=0x7f050001;
+        public static final int widget_url=0x7f050005;
+        public static final int widget_username=0x7f050004;
     }
     public static final class style {
         public static final int BulletPoint=0x7f070001;
