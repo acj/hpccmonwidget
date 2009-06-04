@@ -18,24 +18,17 @@ package org.linuxguy.HPCCMonWidget;
 
 import org.linuxguy.HPCCMonWidget.R;
 
-import android.app.PendingIntent;
 import android.app.Service;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.net.Uri;
-import android.os.Handler;
+import android.os.Bundle;
 import android.os.IBinder;
-import android.text.format.Time;
 import android.util.Log;
-import android.widget.EditText;
 import android.widget.RemoteViews;
 
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,16 +42,49 @@ import org.linuxguy.HPCCMonWidget.Helper.ParseException;
  * For more information, please see <http://www.hpcc.msu.edu/>
  */
 public class HPCCMonWidget extends AppWidgetProvider {
+	@Override
+	// Workaround for a bug in Cupcake wherein widgets are not informed
+	// of their imminent destruction.
+	public void onReceive(Context context, Intent intent) {
+	    final String action = intent.getAction();
+	    if (AppWidgetManager.ACTION_APPWIDGET_DELETED.equals(action)) {
+	    	Bundle extras = intent.getExtras();
+	        final int appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID,
+	                AppWidgetManager.INVALID_APPWIDGET_ID);
+	        if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+	            this.onDeleted(context, new int[] { appWidgetId });
+	        }
+	    } else {
+	        super.onReceive(context, intent);
+	    }
+
+	}
+
+	@Override
+	public void onDeleted(Context context, int[] appWidgetIds) {
+		Log.i("HPCCMonWidget", "Deleted");
+		super.onDeleted(context, appWidgetIds);
+		context.stopService(new Intent(context, UpdateService.class));
+	}
+
 	public int mAppWidgetId;
 	
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager,
             int[] appWidgetIds) {
+    	Log.i("HPCCMonWidget", "Update");
         // To prevent any ANR timeouts, we perform the update in a service
     	context.startService(new Intent(context, UpdateService.class));
     }
     
-    public static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
+    @Override
+	public void onDisabled(Context context) {
+    	Log.i("HPCCMonWidget", "Disabled");
+		super.onDisabled(context);
+		context.stopService(new Intent(context, UpdateService.class));
+	}
+
+	public static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
     		int appWidgetId, String username, String url) {
     	RemoteViews views = UpdateService.buildUpdate(context);
     	appWidgetManager.updateAppWidget(appWidgetId, views);
@@ -81,7 +107,7 @@ public class HPCCMonWidget extends AppWidgetProvider {
          * Build a widget update to show the HPCC status.
          */
         public static RemoteViews buildUpdate(Context context) {
-            RemoteViews updateViews = new RemoteViews(context.getPackageName(), R.layout.widget_word);;
+            RemoteViews updateViews = new RemoteViews(context.getPackageName(), R.layout.widget_word);
             String pageContent = "";
             
             if (Helper.getHPCCUser() == "") {
